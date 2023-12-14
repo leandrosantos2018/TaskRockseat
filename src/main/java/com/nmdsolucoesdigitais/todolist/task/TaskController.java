@@ -1,10 +1,22 @@
 package com.nmdsolucoesdigitais.todolist.task;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/Task")
@@ -14,11 +26,33 @@ public class TaskController {
     private ITaskRepository repository;
 
     @PostMapping("/create")
-    public TaskModel TaskCreate(@RequestBody TaskModel taskModel){
+    public ResponseEntity TaskCreate(@RequestBody TaskModel taskModel, HttpServletRequest request){
+        
+        var IdUser = request.getAttribute("idUser");
+        taskModel.setIdUser((UUID)IdUser);
 
+        var currentData = LocalDateTime.now();
+
+        if(currentData.isAfter(taskModel.getStartAt() )|| currentData.isAfter(taskModel.getEndAt() )){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("Data de inicio/ Data de Término deve ser marior que a data atual");
+        }
+        
+        if(taskModel.getStartAt().isAfter(taskModel.getEndAt())){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("Data de inicio dever ser meno que data Término");
+        }
        var task =  repository.save(taskModel);
 
-       return task;
+       return ResponseEntity.status(HttpStatus.OK).body(task);
 
     }
+    @GetMapping("/findAll")
+    public ResponseEntity<List<TaskModel>> getTaskAll( HttpServletRequest request) {
+        var IdUser_ = request.getAttribute("idUser");
+        UUID IdUser = (UUID) IdUser_;
+        List<TaskModel> listTarefas = repository.findByIdUser(IdUser);
+        return ResponseEntity.ok().body(listTarefas);
+    }
+    
 }

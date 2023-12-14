@@ -9,6 +9,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.nmdsolucoesdigitais.todolist.user.IUserRepository;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 
@@ -18,34 +19,60 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class FilterTaskAuth extends OncePerRequestFilter {
 
+    @Autowired
+    private IUserRepository repository;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-           
-           IUserRepository repository;     
-             
-            // pegar autenticaçã 
 
-            
+        var servletPath = request.getServletPath();
+
+        if (servletPath.equals("/Task/create")) {
+
+            // pegar autenticação
 
             var autorization = request.getHeader("Authorization");
             var authEncoded = autorization.substring("basic".length()).trim();
             byte[] authDecod = Base64.getDecoder().decode(authEncoded);
 
             var authString = new String(authDecod);
-            
-            String [] credenciasi = authString.split(":");     
-            System.out.println(credenciasi[0]);
-            System.out.println(credenciasi[1]);
-            
-            //validar o usuario
 
-            //valida senha 
+            String[] credentials = authString.split(":");
+            var username = credentials[0];
+            var password = credentials[1];
 
-            //segue viagem 
-        filterChain.doFilter(request, response);
+            // validar o usuario
+            var user = this.repository.findByUsername(username);
+
+            if (user == null) {
+
+                response.sendError(401);
+
+            } else {
+
+                // valida senha
+
+                var result = BCrypt.verifyer().verify(password.toCharArray(), user.getPassword());
+
+                if (result.verified) {
+                    request.setAttribute("idUser",user.getId());
+
+                    // segue viagem
+                    filterChain.doFilter(request, response);
+
+                } else {
+                    response.sendError(401);
+                }
+
+            }
+
+        }else {
+
+            filterChain.doFilter(request, response);
+
+        }
 
     }
 
-   
 }
