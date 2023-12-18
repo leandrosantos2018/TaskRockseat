@@ -60,7 +60,7 @@ public class TaskController {
 
 
     @PutMapping("/atualizar/{id}")
-    public ResponseEntity<TaskModel> Update( @PathVariable UUID id, @RequestBody TaskModel taskModel, HttpServletRequest request ){
+    public ResponseEntity Update( @PathVariable UUID id, @RequestBody TaskModel taskModel, HttpServletRequest request ){
          var idUser = (UUID) request.getAttribute("idUser");
 
         taskModel = repository.getReferenceById(id);
