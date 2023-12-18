@@ -10,9 +10,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -33,26 +36,38 @@ public class TaskController {
 
         var currentData = LocalDateTime.now();
 
-        if(currentData.isAfter(taskModel.getStartAt() )|| currentData.isAfter(taskModel.getEndAt() )){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body("Data de inicio/ Data de Término deve ser marior que a data atual");
-        }
+        // if(currentData.isAfter(taskModel.getStartAt() )|| currentData.isAfter(taskModel.getEndAt() )){
+        //     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        //     .body("Data de inicio/ Data de Término deve ser marior que a data atual");
+        // }
         
-        if(taskModel.getStartAt().isAfter(taskModel.getEndAt())){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body("Data de inicio dever ser meno que data Término");
-        }
+        // if(taskModel.getStartAt().isAfter(taskModel.getEndAt())){
+        //     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        //     .body("Data de inicio dever ser meno que data Término");
+        // }
        var task =  repository.save(taskModel);
 
        return ResponseEntity.status(HttpStatus.OK).body(task);
 
     }
+
     @GetMapping("/findAll")
-    public ResponseEntity<List<TaskModel>> getTaskAll( HttpServletRequest request) {
-        var IdUser_ = request.getAttribute("idUser");
-        UUID IdUser = (UUID) IdUser_;
-        List<TaskModel> listTarefas = repository.findByIdUser(IdUser);
-        return ResponseEntity.ok().body(listTarefas);
+    public ResponseEntity<List<TaskModel>> getTaskAll( UUID IdUser ,HttpServletRequest request) {
+        IdUser = (UUID) request.getAttribute("idUser");
+        var tasks = this.repository.findByIdUser(IdUser);
+        return ResponseEntity.ok(tasks);     
+    }
+
+
+    @PutMapping("/atualizar/{id}")
+    public ResponseEntity<TaskModel> Update( @PathVariable UUID id, @RequestBody TaskModel taskModel, HttpServletRequest request ){
+         var idUser = (UUID) request.getAttribute("idUser");
+
+        taskModel = repository.getReferenceById(id);
+        taskModel.setIdUser(idUser);
+        repository.save(taskModel);
+         return ResponseEntity.ok(taskModel);
+        
     }
     
 }
