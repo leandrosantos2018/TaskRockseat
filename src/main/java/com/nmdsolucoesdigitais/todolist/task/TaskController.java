@@ -52,7 +52,7 @@ public class TaskController {
     }
 
     @GetMapping("/findAll")
-    public ResponseEntity<List<TaskModel>> getTaskAll( UUID IdUser ,HttpServletRequest request) {
+    public ResponseEntity getTaskAll( UUID IdUser ,HttpServletRequest request) {
         IdUser = (UUID) request.getAttribute("idUser");
         var tasks = this.repository.findByIdUser(IdUser);
         return ResponseEntity.ok(tasks);     
