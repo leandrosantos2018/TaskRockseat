@@ -6,7 +6,7 @@ Esta é uma API REST desenvolvida com Spring Boot para gerenciar tarefas de usu�
 
 - Java
 - Spring Boot
-- Banco de Dados: (indique o banco de dados utilizado, se aplicável)
+- Banco de Dados: H2
 - Jakarta Servlet (para manipulação de requisições HTTP)
 
 ## Endpoints
